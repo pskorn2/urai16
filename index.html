@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานสถานะการซ่อมผ้า</title>
+    <style>
+        :root {
+            --primary: #7986cb;
+            --primary-light: #aab6fe;
+            --primary-dark: #49599a;
+            --secondary: #ff8a65;
+            --secondary-light: #ffbb93;
+            --secondary-dark: #c75b39;
+            --text-on-primary: #ffffff;
+            --text-on-secondary: #000000;
+            --background: #f5f5f5;
+            --card: #ffffff;
+            --border: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .owner {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .queue-info {
+            background-color: var(--primary-dark);
+            color: var(--text-on-primary);
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: inline-block;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .queue-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .highlight-number {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--secondary-light);
+        }
+        
+        .search-container {
+            background-color: var(--card);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(121, 134, 203, 0.2);
+            outline: none;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab:hover {
+            background-color: rgba(121, 134, 203, 0.1);
+        }
+        
+        .tab.active {
+            color: var(--primary-dark);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .tab-badge {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: var(--text-on-secondary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            text-align: center;
+            line-height: 20px;
+            margin-left: 5px;
+        }
+        
+        .customer-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .customer-card {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .customer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .customer-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .garment-details {
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .status-pending {
+            background-color: #fff9c4;
+            color: #fbc02d;
+        }
+        
+        .status-in-progress {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .price {
+            font-weight: 600;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        
+        .pay-button {
+            background-color: var(--secondary);
+            color: var(--text-on-secondary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .pay-button:hover {
+            background-color: var(--secondary-dark);
+            transform: scale(1.02);
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s ease;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .payment-amount {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--primary-dark);
+        }
+        
+        .qr-code {
+            display: block;
+            margin: 20px auto;
+            max-width: 200px;
+            border-radius: 8px;
+        }
+        
+        .promptpay-number {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border: 1px dashed var(--border);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .promptpay-number:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .copy-success {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        
+        .copy-success.show {
+            display: block;
+            animation: fadeOut 2s forwards;
+            animation-delay: 1s;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .customer-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-content h1 {
+                margin-bottom: 5px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
+                margin-bottom: 15px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+            }
+        }
+        
+        /* Animation for search results */
+        @keyframes highlightNew {
+            0% { background-color: rgba(121, 134, 203, 0.2); }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight-new {
+            animation: highlightNew 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>รายงานสถานะการซ่อมผ้า</h1>
+                <div class="owner">โดย คุณอุไร</div>
+                <div class="queue-info" id="queue-info">กำลังรอซ่อมอยู่ <span class="highlight-number" id="pending-count">0</span> รายการ</div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="search" class="search-input" placeholder="ค้นหาตามชื่อลูกค้าหรือรายละเอียดเสื้อผ้า...">
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="all">ทั้งหมด <span class="tab-badge" id="all-count">0</span></div>
+            <div class="tab" data-tab="in-progress">กำลังซ่อม <span class="tab-badge" id="in-progress-count">0</span></div>
+            <div class="tab" data-tab="completed">เสร็จแล้ว <span class="tab-badge" id="completed-count">0</span></div>
+            <div class="tab" data-tab="pending">รอดำเนินการ <span class="tab-badge" id="pending-tab-count">0</span></div>
+        </div>
+        
+        <div class="tab-content active" id="all">
+            <div class="customer-cards" id="all-cards">
+                <!-- Customer cards will be populated by JavaScript -->
+            </div>
+            <div class="no-results" id="all-no-results" style="display: none;">ไม่พบรายการ</div>
+        </div>
+        
+        <div class="tab-content" id="in-progress">
+            <div class="customer-cards" id="in-progress-cards">
+                <!-- In progress cards will be populated by JavaScript -->
+            </div>
+            <div class="no-results" id="in-progress-no-results" style="display: none;">ไม่พบรายการ</div>
+        </div>
+        
+        <div class="tab-content" id="completed">
+            <div class="customer-cards" id="completed-cards">
+                <!-- Completed cards will be populated by JavaScript -->
+            </div>
+            <div class="no-results" id="completed-no-results" style="display: none;">ไม่พบรายการ</div>
+        </div>
+        
+        <div class="tab-content" id="pending">
+            <div class="customer-cards" id="pending-cards">
+                <!-- Pending cards will be populated by JavaScript -->
+            </div>
+            <div class="no-results" id="pending-no-results" style="display: none;">ไม่พบรายการ</div>
+        </div>
+    </div>
+    
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2 style="text-align: center;">ชำระเงิน</h2>
+            <div class="payment-amount" id="payment-amount">฿0.00</div>
+            <img class="qr-code" id="qr-code" src="" alt="QR Code for PromptPay">
+            <div class="promptpay-number" id="promptpay-number" onclick="copyPromptPay()">0851422903</div>
+            <div class="copy-success" id="copy-success">คัดลอกหมายเลขแล้ว!</div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample customer data - Can be easily edited
+        const customers = [
+            {
+                id: 1,
+                name: "อุไร",
+                garment: "ขาด",
+                status: "กำลังซ่อม",
+                statusCode: "in-progress",
+                price: 20
+            },
+            // {
+            //     id: 2,
+            //     name: "วิชัย ใจดี",
+            //     garment: "กางเกงยีนส์ ขาขาด",
+            //     status: "เสร็จแล้ว",
+            //     statusCode: "completed",
+            //     price: 200
+            // },
+            // {
+            //     id: 3,
+            //     name: "นภา สมบูรณ์",
+            //     garment: "ชุดไทยผ้าไหม ตะเข็บหลุด",
+            //     status: "รอดำเนินการ",
+            //     statusCode: "pending",
+            //     price: 350
+            // },
+            // {
+            //     id: 4,
+            //     name: "ประเสริฐ รักเรียน",
+            //     garment: "เสื้อสูทสีดำ กระดุมหลุด",
+            //     status: "รอดำเนินการ",
+            //     statusCode: "pending",
+            //     price: 180
+            // }
+        ];
+        
+        // DOM elements
+        const modal = document.getElementById('payment-modal');
+        const qrCode = document.getElementById('qr-code');
+        const paymentAmount = document.getElementById('payment-amount');
+        const copySuccess = document.getElementById('copy-success');
+        const searchInput = document.getElementById('search');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const pendingCount = document.getElementById('pending-count');
+        const allCount = document.getElementById('all-count');
+        const inProgressCount = document.getElementById('in-progress-count');
+        const completedCount = document.getElementById('completed-count');
+        const pendingTabCount = document.getElementById('pending-tab-count');
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCustomers();
+            updateCounters();
+            setupTabs();
+            setupSearch();
+        });
+        
+        // Update queue counters
+        function updateCounters() {
+            const counts = {
+                all: 0,
+                'in-progress': 0,
+                completed: 0,
+                pending: 0
+            };
+            
+            customers.forEach(customer => {
+                counts.all++;
+                counts[customer.statusCode]++;
+            });
+            
+            // Update the counters
+            allCount.textContent = counts.all;
+            inProgressCount.textContent = counts['in-progress'];
+            completedCount.textContent = counts.completed;
+            pendingCount.textContent = counts.pending;
+            pendingTabCount.textContent = counts.pending;
+            
+            // Update "No Results" messages visibility
+            updateNoResultsMessages();
+        }
+        
+        // Render customer cards
+        function renderCustomers(filterText = '') {
+            const allCardsContainer = document.getElementById('all-cards');
+            const inProgressCardsContainer = document.getElementById('in-progress-cards');
+            const completedCardsContainer = document.getElementById('completed-cards');
+            const pendingCardsContainer = document.getElementById('pending-cards');
+            
+            // Clear all containers
+            allCardsContainer.innerHTML = '';
+            inProgressCardsContainer.innerHTML = '';
+            completedCardsContainer.innerHTML = '';
+            pendingCardsContainer.innerHTML = '';
+            
+            const filteredCustomers = filterText 
+                ? customers.filter(customer => 
+                    customer.name.toLowerCase().includes(filterText.toLowerCase()) || 
+                    customer.garment.toLowerCase().includes(filterText.toLowerCase()))
+                : customers;
+            
+            // Track filtered counts
+            const filteredCounts = {
+                all: 0,
+                'in-progress': 0,
+                completed: 0,
+                pending: 0
+            };
+            
+            filteredCustomers.forEach(customer => {
+                const card = createCustomerCard(customer);
+                
+                // Add to All tab
+                allCardsContainer.appendChild(card.cloneNode(true));
+                filteredCounts.all++;
+                
+                // Add to corresponding status tab
+                if (customer.statusCode === 'in-progress') {
+                    inProgressCardsContainer.appendChild(card.cloneNode(true));
+                    filteredCounts['in-progress']++;
+                } else if (customer.statusCode === 'completed') {
+                    completedCardsContainer.appendChild(card.cloneNode(true));
+                    filteredCounts.completed++;
+                } else if (customer.statusCode === 'pending') {
+                    pendingCardsContainer.appendChild(card.cloneNode(true));
+                    filteredCounts.pending++;
+                }
+            });
+            
+            // Update tab badges with filtered counts if search is active
+            if (filterText) {
+                allCount.textContent = filteredCounts.all;
+                inProgressCount.textContent = filteredCounts['in-progress'];
+                completedCount.textContent = filteredCounts.completed;
+                pendingTabCount.textContent = filteredCounts.pending;
+            } else {
+                // Otherwise show total counts
+                updateCounters();
+            }
+            
+            // Show/hide "No Results" messages
+            updateNoResultsMessages(filteredCounts);
+            
+            // Add event listeners to pay buttons
+            document.querySelectorAll('.pay-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const customerId = parseInt(this.getAttribute('data-id'));
+                    openPaymentModal(customerId);
+                });
+            });
+        }
+        
+        // Update no results messages
+        function updateNoResultsMessages(counts = null) {
+            const sections = ['all', 'in-progress', 'completed', 'pending'];
+            
+            sections.forEach(section => {
+                const container = document.getElementById(`${section}-cards`);
+                const noResults = document.getElementById(`${section}-no-results`);
+                
+                if (counts) {
+                    // Use filtered counts when search is active
+                    noResults.style.display = counts[section] === 0 ? 'block' : 'none';
+                } else {
+                    // Use DOM check otherwise
+                    noResults.style.display = container.children.length === 0 ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Create a customer card
+        function createCustomerCard(customer) {
+            const card = document.createElement('div');
+            card.className = 'customer-card highlight-new';
+            
+            let statusClass = '';
+            if (customer.statusCode === 'in-progress') {
+                statusClass = 'status-in-progress';
+            } else if (customer.statusCode === 'completed') {
+                statusClass = 'status-completed';
+            } else if (customer.statusCode === 'pending') {
+                statusClass = 'status-pending';
+            }
+            
+            card.innerHTML = `
+                <div class="customer-name">${customer.name}</div>
+                <div class="garment-details">${customer.garment}</div>
+                <div class="status ${statusClass}">${customer.status}</div>
+                <div class="price">฿${customer.price.toFixed(2)}</div>
+                <button class="pay-button" data-id="${customer.id}">ชำระเงิน</button>
+            `;
+            
+            return card;
+        }
+        
+        // Setup tabs functionality
+        function setupTabs() {
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Show selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+        
+        // Setup search functionality
+        function setupSearch() {
+            searchInput.addEventListener('input', function() {
+                renderCustomers(this.value);
+            });
+        }
+        
+        // Open payment modal
+        function openPaymentModal(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) return;
+            
+            // Update QR code with dynamic amount
+            qrCode.src = `https://promptpay.io/0851422903/${customer.price}.png`;
+            
+            // Update payment amount
+            paymentAmount.textContent = `฿${customer.price.toFixed(2)}`;
+            
+            // Show modal with animation
+            modal.classList.add('show');
+        }
+        
+        // Close payment modal
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+        
+        // Copy PromptPay number to clipboard
+        function copyPromptPay() {
+            const promptpayNumber = document.getElementById('promptpay-number').textContent;
+            navigator.clipboard.writeText(promptpayNumber).then(() => {
+                copySuccess.classList.add('show');
+                setTimeout(() => {
+                    copySuccess.classList.remove('show');
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
