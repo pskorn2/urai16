@@ -12,6 +12,7 @@
             --light: #F5F5F5;
             --white: #FFFFFF;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --success: #4CAF50;
         }
         
         * {
@@ -114,6 +115,20 @@
             margin: 15px 0;
         }
         
+        .promptpay-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            font-size: 16px;
+            color: var(--secondary);
+        }
+        
+        .promptpay-number {
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
         .btn {
             background-color: var(--primary);
             color: var(--white);
@@ -126,6 +141,7 @@
             width: 100%;
             max-width: 300px;
             font-weight: 500;
+            margin-bottom: 10px;
         }
         
         .btn:hover {
@@ -134,6 +150,17 @@
         
         .btn:active {
             transform: translateY(1px);
+        }
+        
+        .btn-confirm {
+            background-color: var(--success);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-confirm:hover {
+            background-color: #3d8b40;
         }
         
         .copy-success {
@@ -168,6 +195,51 @@
             color: var(--secondary);
         }
         
+        .confirm-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+        }
+        
+        .animate {
+            animation: confirmAnimation 1s forwards;
+        }
+        
+        @keyframes confirmAnimation {
+            0% {
+                transform: translateX(-100%);
+            }
+            50% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        .success-message {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         @media (max-width: 480px) {
             header h1 {
                 font-size: 24px;
@@ -177,6 +249,46 @@
                 padding: 16px;
             }
         }
+        /* เพิ่มส่วนนี้ในแท็ก <style> */
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #fff;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-text {
+    transition: opacity 0.3s;
+}
+
+.processing .spinner {
+    display: inline-block;
+}
+
+.processing .btn-text {
+    opacity: 0.8;
+}
+
+.btn-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-confirm:disabled {
+    background-color: #8bc34a;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
     </style>
 </head>
 <body>
@@ -195,14 +307,27 @@
             <div class="qr-section">
                 <div class="qr-container">
                     <h3>QR Code สำหรับชำระเงิน</h3>
+                    <div class="promptpay-info">
+                        พร้อมเพย์: <span class="promptpay-number">085-142-2903</span>
+                    </div>
                     <div class="amount-display">
                         <span id="amount-display">0.00</span> บาท
                     </div>
                     <img id="qr-code" class="qr-image" src="https://promptpay.io/0851422903/0.png" alt="QR Code PromptPay">
                 </div>
                 
-                <button id="copy-btn" class="btn">คัดลอกลิงก์ QR Code</button>
-                <div id="copy-success" class="copy-success">คัดลอกลิงก์เรียบร้อยแล้ว!</div>
+                <button id="copy-btn" class="btn">คัดลอกเบอร์พร้อมเพย์</button>
+                <div id="copy-success" class="copy-success">คัดลอกเบอร์เรียบร้อยแล้ว!</div>
+                
+                <!-- แก้ไขปุ่มยืนยันเป็นแบบนี้ -->
+<button id="confirm-btn" class="btn btn-confirm">
+    <div class="spinner"></div>
+    <span class="btn-text">ยืนยันการชำระเงิน</span>
+</button>
+                
+                <div id="success-message" class="success-message">
+                    <p>✓ บันทึกรายการชำระเงินเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ</p>
+                </div>
             </div>
         </div>
         
@@ -213,6 +338,7 @@
                 <li>สแกน QR Code ด้วยแอปธนาคารของท่าน</li>
                 <li>ตรวจสอบข้อมูลการโอนเงิน</li>
                 <li>ยืนยันการทำรายการ</li>
+                <li>กดปุ่ม "ยืนยันการชำระเงิน" เมื่อชำระเงินเสร็จเรียบร้อย</li>
             </ol>
         </div>
         
@@ -228,9 +354,13 @@
         const qrCode = document.getElementById('qr-code');
         const copyBtn = document.getElementById('copy-btn');
         const copySuccess = document.getElementById('copy-success');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const confirmAnimation = document.querySelector('.confirm-animation');
+        const successMessage = document.getElementById('success-message');
         
         // Default QR URL
         const baseQrUrl = 'https://promptpay.io/0851422903/';
+        const promptpayNumber = '0851422903';
         
         // Update QR code when amount changes
         amountInput.addEventListener('input', updateQR);
@@ -246,14 +376,11 @@
             qrCode.src = qrUrl;
         }
         
-        // Copy QR link to clipboard
-        copyBtn.addEventListener('click', copyQrLink);
+        // Copy PromptPay number to clipboard
+        copyBtn.addEventListener('click', copyPromptPay);
         
-        function copyQrLink() {
-            let amount = parseFloat(amountInput.value) || 0;
-            const qrUrl = `${baseQrUrl}${amount}.png`;
-            
-            navigator.clipboard.writeText(qrUrl).then(() => {
+        function copyPromptPay() {
+            navigator.clipboard.writeText(promptpayNumber).then(() => {
                 // Show success message
                 copySuccess.classList.add('show');
                 
@@ -262,9 +389,53 @@
                     copySuccess.classList.remove('show');
                 }, 3000);
             }).catch(err => {
-                console.error('ไม่สามารถคัดลอกลิงก์ได้: ', err);
+                console.error('ไม่สามารถคัดลอกเบอร์พร้อมเพย์ได้: ', err);
             });
         }
+        
+        // Confirm payment with animation
+        confirmBtn.addEventListener('click', confirmPayment);
+        
+        function confirmPayment() {
+            // Trigger animation
+            confirmAnimation.classList.add('animate');
+            
+            // Wait for animation to complete
+            setTimeout(() => {
+                // Show success message
+                successMessage.classList.add('show');
+                
+                // Reset animation
+                confirmAnimation.classList.remove('animate');
+            }, 1000);
+        }
+        // แก้ไขฟังก์ชัน confirmPayment() เป็นแบบนี้
+function confirmPayment() {
+    // Check if amount is entered
+    let amount = parseFloat(amountInput.value) || 0;
+    if (amount <= 0) {
+        alert('กรุณาระบุจำนวนเงินก่อนยืนยันการชำระเงิน');
+        return;
+    }
+
+    // Disable button and show spinner
+    confirmBtn.disabled = true;
+    confirmBtn.classList.add('processing');
+    
+    // Simulate processing time (3 seconds)
+    setTimeout(() => {
+        // Hide spinner
+        confirmBtn.classList.remove('processing');
+        
+        // Show success message
+        successMessage.classList.add('show');
+        
+        // Keep button disabled with success state
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = "<span class='btn-text'>ชำระเงินเรียบร้อย</span>";
+        confirmBtn.style.backgroundColor = "#8bc34a";
+    }, 3000);  // ตั้งเวลาดีเลย์ที่ 3 วินาที (สามารถปรับเป็น 5000 หรือ 10000 เพื่อให้นานขึ้น)
+}
         
         // Initialize with default value
         updateQR();
