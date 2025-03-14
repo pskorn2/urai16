@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบชำระเงิน PromptPay - คุณอุไร</title>
+    <style>
+        :root {
+            --primary: #1976D2;
+            --primary-light: #BBDEFB;
+            --secondary: #424242;
+            --light: #F5F5F5;
+            --white: #FFFFFF;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Sarabun', 'Prompt', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--secondary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--secondary);
+            font-size: 16px;
+        }
+        
+        .payment-card {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #DDD;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+        
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .qr-container {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .qr-image {
+            width: 100%;
+            height: auto;
+            margin: 15px 0;
+        }
+        
+        .amount-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 300px;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            background-color: #1565C0;
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .copy-success {
+            color: green;
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .show {
+            opacity: 1;
+        }
+        
+        .info-section {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--secondary);
+        }
+        
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 24px;
+            }
+            
+            .payment-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ระบบชำระเงิน PromptPay</h1>
+            <p>บริการโดย คุณอุไร</p>
+        </header>
+        
+        <div class="payment-card">
+            <div class="form-group">
+                <label for="amount">กรุณาระบุจำนวนเงิน (บาท)</label>
+                <input type="number" id="amount" min="1" step="1" placeholder="กรอกจำนวนเงิน" required>
+            </div>
+            
+            <div class="qr-section">
+                <div class="qr-container">
+                    <h3>QR Code สำหรับชำระเงิน</h3>
+                    <div class="amount-display">
+                        <span id="amount-display">0.00</span> บาท
+                    </div>
+                    <img id="qr-code" class="qr-image" src="https://promptpay.io/0851422903/0.png" alt="QR Code PromptPay">
+                </div>
+                
+                <button id="copy-btn" class="btn">คัดลอกลิงก์ QR Code</button>
+                <div id="copy-success" class="copy-success">คัดลอกลิงก์เรียบร้อยแล้ว!</div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>วิธีการชำระเงิน</h3>
+            <ol>
+                <li>กรอกจำนวนเงินที่ต้องการโอน</li>
+                <li>สแกน QR Code ด้วยแอปธนาคารของท่าน</li>
+                <li>ตรวจสอบข้อมูลการโอนเงิน</li>
+                <li>ยืนยันการทำรายการ</li>
+            </ol>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 ระบบชำระเงิน PromptPay คุณอุไร. สงวนลิขสิทธิ์.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const amountInput = document.getElementById('amount');
+        const amountDisplay = document.getElementById('amount-display');
+        const qrCode = document.getElementById('qr-code');
+        const copyBtn = document.getElementById('copy-btn');
+        const copySuccess = document.getElementById('copy-success');
+        
+        // Default QR URL
+        const baseQrUrl = 'https://promptpay.io/0851422903/';
+        
+        // Update QR code when amount changes
+        amountInput.addEventListener('input', updateQR);
+        
+        function updateQR() {
+            let amount = parseFloat(amountInput.value) || 0;
+            
+            // Format the display amount
+            amountDisplay.textContent = amount.toFixed(2);
+            
+            // Update QR code
+            const qrUrl = `${baseQrUrl}${amount}.png`;
+            qrCode.src = qrUrl;
+        }
+        
+        // Copy QR link to clipboard
+        copyBtn.addEventListener('click', copyQrLink);
+        
+        function copyQrLink() {
+            let amount = parseFloat(amountInput.value) || 0;
+            const qrUrl = `${baseQrUrl}${amount}.png`;
+            
+            navigator.clipboard.writeText(qrUrl).then(() => {
+                // Show success message
+                copySuccess.classList.add('show');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    copySuccess.classList.remove('show');
+                }, 3000);
+            }).catch(err => {
+                console.error('ไม่สามารถคัดลอกลิงก์ได้: ', err);
+            });
+        }
+        
+        // Initialize with default value
+        updateQR();
+    </script>
+</body>
+</html>
