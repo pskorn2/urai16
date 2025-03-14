@@ -461,6 +461,36 @@
             font-size: 0.9rem;
             opacity: 0.8;
         }
+        .promptpay-button {
+        display: inline-block;
+        background-color: #1976D2;
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+        font-family: 'Sarabun', 'Prompt', sans-serif;
+    }
+    
+    .promptpay-button:hover {
+        background-color: #1565C0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .promptpay-button:active {
+        transform: translateY(0);
+    }
+    
+    .promptpay-button img {
+        vertical-align: middle;
+        margin-right: 8px;
+        height: 20px;
+    }
     </style>
 </head>
 <body>
@@ -513,6 +543,9 @@
             </div>
             <div class="no-results" id="pending-no-results" style="display: none;">ไม่พบรายการ</div>
         </div>
+        <a href="promptpay.html" class="promptpay-button">
+    <img src="https://promptpay.io/assets/img/PromptPay-logo.png" alt="PromptPay"> ชำระเงินด้วย PromptPay
+</a>
         <footer>
             <p>© 2025 คุณอุไร บริการซ่อมผ้า <br> ติดต่อสอบถาม: 085-142-2903</p>
         </footer>
